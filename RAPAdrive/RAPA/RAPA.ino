@@ -1,47 +1,77 @@
-// Include necessary libraries
 #include <Arduino.h>
 
-// Define pins for motor control
+// motor pins declaration
 const int leftMotorPin1 = 5;
 const int leftMotorPin2 = 4;
 const int rightMotorPin1 = 3;
 const int rightMotorPin2 = 2;
 
-// Define pins for ultrasonic sensors
+// sensor pins declaration
 const int frontTrigPin = 6;
 const int frontEchoPin = 7;
 const int rightTrigPin = 8;
 const int rightEchoPin = 9;
 
-// Define maximum distance for ultrasonic sensor (in cm)
+// !!!DISTANCE IN CM!!!
 const int maxDistance = 10;
 
-// Define motor speeds
 const int motorSpeed = 150;
 
 void setup() {
-  // Initialize serial communication for debugging
   Serial.begin(9600);
 
-  // Initialize motor control pins
+  // motor pins
   pinMode(leftMotorPin1, OUTPUT);
   pinMode(leftMotorPin2, OUTPUT);
   pinMode(rightMotorPin1, OUTPUT);
   pinMode(rightMotorPin2, OUTPUT);
 
-  // Initialize ultrasonic sensor pins
+  // sensor pins
   pinMode(frontTrigPin, OUTPUT);
   pinMode(frontEchoPin, INPUT);
   pinMode(rightTrigPin, OUTPUT);
   pinMode(rightEchoPin, INPUT);
 }
 
+// Robot turns 90 degrees to left
+void turnLeft(){
+  digitalWrite(leftMotorPin1, LOW);
+  digitalWrite(leftMotorPin2, HIGH);
+  digitalWrite(rightMotorPin1, HIGH);
+  digitalWrite(rightMotorPin2, LOW);
+  delay(1000);
+}
+
+// Robot turns 90 degrees to right
+void turnRight(){
+  digitalWrite(leftMotorPin1, HIGH);
+  digitalWrite(leftMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+  digitalWrite(rightMotorPin2, HIGH);
+  delay(1000);
+}
+
+// Robot accelerates straight forward
+void forward(){
+  digitalWrite(leftMotorPin1, HIGH);
+  digitalWrite(leftMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, HIGH);
+  digitalWrite(rightMotorPin2, LOW);
+}
+
+// Robot stops in place
+void stop(){
+  digitalWrite(leftMotorPin1, LOW);
+  digitalWrite(leftMotorPin2, LOW);
+  digitalWrite(rightMotorPin1, LOW);
+  digitalWrite(rightMotorPin2, LOW);
+}
+
 void loop() {
-  // Read distance from ultrasonic sensors
   long frontDuration, frontDistance;
   long rightDuration, rightDistance;
   
-  // Read distance from front ultrasonic sensor
+  // Distance to front wall
   digitalWrite(frontTrigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(frontTrigPin, HIGH);
@@ -50,7 +80,7 @@ void loop() {
   frontDuration = pulseIn(frontEchoPin, HIGH);
   frontDistance = frontDuration * 0.034 / 2;
 
-  // Read distance from right ultrasonic sensor
+  // Distance to right wall
   digitalWrite(rightTrigPin, LOW);
   delayMicroseconds(2);
   digitalWrite(rightTrigPin, HIGH);
@@ -59,7 +89,7 @@ void loop() {
   rightDuration = pulseIn(rightEchoPin, HIGH);
   rightDistance = rightDuration * 0.034 / 2;
 
-  // Debugging output
+  // For debugging purposes xD
   Serial.print("Front Distance: ");
   Serial.print(frontDistance);
   Serial.print(" cm, Right Distance: ");
@@ -67,33 +97,17 @@ void loop() {
 
   // Check conditions and control motors accordingly
   if (rightDistance <= maxDistance && frontDistance > maxDistance) {
-    // Case 1: Only right sensor detects a wall, go straight forward
-    digitalWrite(leftMotorPin1, HIGH);
-    digitalWrite(leftMotorPin2, LOW);
-    digitalWrite(rightMotorPin1, HIGH);
-    digitalWrite(rightMotorPin2, LOW);
+    // Right sensor detects wall
+    forward();
   } else if (frontDistance <= maxDistance && rightDistance > maxDistance) {
-    // Case 2: Front sensor detects a wall, rotate 90 degrees right
-    digitalWrite(leftMotorPin1, HIGH);
-    digitalWrite(leftMotorPin2, LOW);
-    digitalWrite(rightMotorPin1, LOW);
-    digitalWrite(rightMotorPin2, HIGH);
-    delay(1000); // Adjust delay for desired turn duration
+    // Front sensor detects wall
+    turnRight();
   } else if (frontDistance > maxDistance && rightDistance > maxDistance) {
-    // Case 3: Both sensors don't detect any wall, stop motors
-    digitalWrite(leftMotorPin1, LOW);
-    digitalWrite(leftMotorPin2, LOW);
-    digitalWrite(rightMotorPin1, LOW);
-    digitalWrite(rightMotorPin2, LOW);
+    // Neither sensor detect
+    stop();
   } else if (frontDistance <= maxDistance && rightDistance <= maxDistance) {
-    // Case 4: Both sensors detect walls, rotate 90 degrees left
-    digitalWrite(leftMotorPin1, LOW);
-    digitalWrite(leftMotorPin2, HIGH);
-    digitalWrite(rightMotorPin1, HIGH);
-    digitalWrite(rightMotorPin2, LOW);
-    delay(1000); // Adjust delay for desired turn duration
+    // Both sensors detect walls
+    turnLeft();
   }
-
-  // Add a delay to control the loop rate
   delay(100);
 }
