@@ -9,8 +9,8 @@ const int rightMotorPin1 = 3;
 const int rightMotorPin2 = 2;
 
 // sensor pins declaration
-const int frontTrigPin = 6;
-const int frontEchoPin = 7;
+const int frontTrigPin = 7;
+const int frontEchoPin = 6;
 const int rightTrigPin = 8;
 const int rightEchoPin = 9;
 
